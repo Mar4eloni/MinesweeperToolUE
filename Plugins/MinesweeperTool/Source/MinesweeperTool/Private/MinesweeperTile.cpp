@@ -7,10 +7,10 @@
 
 void SMinesweeperTile::Construct(const FArguments& InArgs)
 {
-    Game = InArgs._Game;
     X = InArgs._X;
     Y = InArgs._Y;
     bIsBomb = InArgs._IsBomb;
+    Game = InArgs._Game;
 
     State = bIsBomb.Get() ? ETileState::Bomb : ETileState::Hidden;
     
@@ -54,6 +54,9 @@ void SMinesweeperTile::Construct(const FArguments& InArgs)
 
 FReply SMinesweeperTile::OnTileClicked()
 {
+    if (State == ETileState::Flagged)
+        return FReply::Handled();
+
     if (auto GamePtr = Game.Pin())
     {
         GamePtr->RevealTile(X.Get(), Y.Get());
@@ -67,7 +70,7 @@ FReply SMinesweeperTile::OnTileRightClicked()
     {
         State = ETileState::Flagged;
         TileText->SetText(LOCTEXT("FlagSymbol", "F"));
-        TileButton->SetButtonStyle(HiddenButtonStyle.Get()); // Or create a special flag style
+        TileButton->SetButtonStyle(HiddenButtonStyle.Get());
     }
     else if (State == ETileState::Flagged)
     {
@@ -79,25 +82,32 @@ FReply SMinesweeperTile::OnTileRightClicked()
 
 void SMinesweeperTile::Reveal()
 {
-    UE_LOG(LogTemp, Warning, TEXT("Revealing tile at %d,%d - Bomb:%d"), X.Get(), Y.Get(), bIsBomb.Get());
-    
-    if (State == ETileState::Revealed || State == ETileState::Flagged)
+    if (!Game.IsValid())
     {
+        UE_LOG(LogTemp, Error, TEXT("Game instance is invalid!"));
         return;
     }
-
-    State = ETileState::Revealed;
+    
+    UE_LOG(LogTemp, Warning, TEXT("Revealing tile at %d,%d - Bomb:%d"), X.Get(), Y.Get(), bIsBomb.Get());
+    
+    if (State != ETileState::Hidden && State != ETileState::Bomb)
+        return;
 
     if (bIsBomb.Get())
     {
-        TileText->SetText(LOCTEXT("BombSymbol", "X"));
-        TileText->SetColorAndOpacity(FLinearColor::Red);
+        State = ETileState::Bomb;
+       
         TileButton->SetButtonStyle(BombButtonStyle.Get());
     }
     else
     {
-
+        
+        State = ETileState::Revealed;
+        
+        AdjacentBombs = Game.Pin()->CountAdjacentBombs(X.Get(), Y.Get());
+        
         TileButton->SetButtonStyle(RevealedButtonStyle.Get());
+        TileText->SetText(FText::AsNumber(AdjacentBombs));
         
         int32 BombCount = Game.IsValid() ? Game.Pin()->CountAdjacentBombs(X.Get(), Y.Get()) : 0;
         if (BombCount > 0)

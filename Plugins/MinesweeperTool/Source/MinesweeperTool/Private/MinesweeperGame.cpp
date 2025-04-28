@@ -267,7 +267,7 @@ void SMinesweeperGame::RevealTile(int32 X, int32 Y)
 		return;
 	}
 
-	// Actually reveal the tile
+	
 	Grid[X][Y]->Reveal();
 
 	// Immediate game over check if this is a bomb

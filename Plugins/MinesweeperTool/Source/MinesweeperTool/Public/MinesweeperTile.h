@@ -8,8 +8,9 @@ enum class ETileState : uint8
 {
     Hidden,
     Revealed,
-    Flagged,
-    Bomb
+    Bomb,
+    Flagged
+   
 };
 
 class MINESWEEPERTOOL_API SMinesweeperTile : public SCompoundWidget
