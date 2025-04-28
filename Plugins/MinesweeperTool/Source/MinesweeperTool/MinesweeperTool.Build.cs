@@ -39,6 +39,7 @@ public class MinesweeperTool : ModuleRules
 				"EditorStyle",
 				"UnrealEd",
 				"ToolMenus",
+				"UnrealMCP",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);

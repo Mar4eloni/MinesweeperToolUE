@@ -66,7 +66,7 @@ FReply SMinesweeperTile::OnTileRightClicked()
     if (State == ETileState::Hidden)
     {
         State = ETileState::Flagged;
-        TileText->SetText(LOCTEXT("FlagSymbol", "🚩"));
+        TileText->SetText(LOCTEXT("FlagSymbol", "F"));
         TileButton->SetButtonStyle(HiddenButtonStyle.Get()); // Or create a special flag style
     }
     else if (State == ETileState::Flagged)

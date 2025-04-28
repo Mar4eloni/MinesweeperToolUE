@@ -19,6 +19,7 @@ public:
     void InitializeGame(int32 InWidth, int32 InHeight, int32 InBombCount);
     void RevealTile(int32 X, int32 Y);
     void RevealAdjacentTiles(int32 X, int32 Y);
+    void RevealAdjacentTilesImmediate(int32 X, int32 Y);
     void GameOver(bool bWon);
     void ResetGame();
 

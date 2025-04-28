@@ -13,8 +13,8 @@
 void SMinesweeperGame::Construct(const FArguments& InArgs)
 {
 	// Default game settings
-	Width = FMath::Clamp(10, 5, 30);
-    Height = FMath::Clamp(10, 5, 30);
+	Width = FMath::Clamp(10, 5, 50);
+    Height = FMath::Clamp(10, 5, 50);
     BombCount = FMath::Clamp(15, 1, Width * Height - 1);  // Ensure at least 1 non-bomb tile
     RevealedTiles = 0;
     bGameOver = false;
@@ -270,11 +270,12 @@ void SMinesweeperGame::RevealTile(int32 X, int32 Y)
 	// Actually reveal the tile
 	Grid[X][Y]->Reveal();
 
+	// Immediate game over check if this is a bomb
 	if (Grid[X][Y]->IsBomb())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Hit bomb at %d,%d"), X, Y);
 		GameOver(false);
-		return;
+		return;  // Important: return immediately
 	}
 
 	RevealedTiles++;
@@ -295,7 +296,8 @@ void SMinesweeperGame::RevealTile(int32 X, int32 Y)
 	if (AdjacentBombs == 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Revealing adjacent tiles"));
-		RevealAdjacentTiles(X, Y);
+		//RevealAdjacentTiles(X, Y);
+		RevealAdjacentTilesImmediate(X, Y);
 	}
 }
 
@@ -312,7 +314,6 @@ void SMinesweeperGame::RevealAdjacentTiles(int32 X, int32 Y)
 
 			if (IsValidTile(NewX, NewY))
 			{
-				// Briefly highlight tiles being revealed
 				Grid[NewX][NewY]->SetHighlight(true);
 				FTimerHandle UnusedHandle;
 				GWorld->GetTimerManager().SetTimer(UnusedHandle, 
@@ -323,6 +324,25 @@ void SMinesweeperGame::RevealAdjacentTiles(int32 X, int32 Y)
 						}
 					}, 
 					0.05f, false);
+			}
+		}
+	}
+}
+
+void SMinesweeperGame::RevealAdjacentTilesImmediate(int32 X, int32 Y)
+{
+	for (int32 DX = -1; DX <= 1; DX++)
+	{
+		for (int32 DY = -1; DY <= 1; DY++)
+		{
+			if (DX == 0 && DY == 0) continue;
+
+			int32 NewX = X + DX;
+			int32 NewY = Y + DY;
+
+			if (IsValidTile(NewX, NewY) && !Grid[NewX][NewY]->IsRevealed())
+			{
+				RevealTile(NewX, NewY);
 			}
 		}
 	}
